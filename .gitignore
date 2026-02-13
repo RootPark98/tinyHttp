@@ -1,0 +1,19 @@
+# build artifacts
+*.o
+*.a
+*.so
+*.out
+*.exe
+tinyhttp
+
+# debug
+*.dSYM/
+*.log
+
+# editor
+.vscode/
+.idea/
+.DS_Store
+
+# misc
+compile_commands.json
