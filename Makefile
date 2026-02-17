@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -Wpedantic -O2 -g
 INCLUDES = -Iinclude
 TARGET = tinyhttp
 
-SRCS = src/main.c
+SRCS = src/main.c src/server.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
