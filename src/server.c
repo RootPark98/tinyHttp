@@ -79,12 +79,16 @@ int run_server(const char *host, int port){
         buf[n] = '\0';
         printf("---- request (%zd bytes) ----\n%s\n----------------------------\n", n, buf);
 
-        const char body[] = "hello tinyhttp\n";
         char resp[512];
-        int resp_len = snprintf(
-            resp, sizeof(resp),
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain; charset-utf-8\r\n"
+        char method[16] = {0};
+        char path[1024] = {0};
+        char version[16] = {0};
+
+        if (sscanf(buf, "%15s %1023s %15s", method, path, version) < 2) {
+        const char *body = "bad request\n";
+        int resp_len = snprintf(resp, sizeof(resp),
+            "HTTP/1.1 400 Bad Request\r\n"
+            "Content-Type: text/plain; charset=utf-8\r\n"
             "Content-Length: %zu\r\n"
             "Connection: close\r\n"
             "\r\n"
@@ -92,14 +96,47 @@ int run_server(const char *host, int port){
             strlen(body), body);
 
         int sent = 0;
-        while(sent < resp_len){
+        while (sent < resp_len) {
             ssize_t w = write(client_fd, resp + sent, (size_t)(resp_len - sent));
-            if(w < 0){
-                if(errno == EINTR) continue;
-                perror("write");
-                break;
-            }
+            if (w < 0) { if (errno == EINTR) continue; break; }
             sent += (int)w;
+        }
+        close(client_fd);
+        continue;
+        }
+
+        const char *body = NULL;
+        int status = 200;
+        const char *status_text = "OK";
+
+        if (strcmp(path, "/") == 0) {
+        body = "hello tinyhttp\n";
+        } else if (strcmp(path, "/health") == 0) {
+        body = "ok\n";
+        } else {
+        status = 404;
+        status_text = "Not Found";
+        body = "not found\n";
+        }
+
+        int resp_len = snprintf(resp, sizeof(resp),
+            "HTTP/1.1 %d %s\r\n"
+            "Content-Type: text/plain; charset=utf-8\r\n"
+            "Content-Length: %zu\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+            "%s",
+            status, status_text, strlen(body), body);
+
+        int sent = 0;
+        while (sent < resp_len) {
+        ssize_t w = write(client_fd, resp + sent, (size_t)(resp_len - sent));
+        if (w < 0) {
+            if (errno == EINTR) continue;
+            perror("write");
+            break;
+        }
+        sent += (int)w;
         }
 
         close(client_fd);
