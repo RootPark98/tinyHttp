@@ -101,8 +101,8 @@ int run_server(const char *host, int port){
             if (w < 0) { if (errno == EINTR) continue; break; }
             sent += (int)w;
         }
-            close(client_fd);
-            continue;
+        close(client_fd);
+        continue;
         }
 
         const char *body = NULL;
@@ -110,13 +110,13 @@ int run_server(const char *host, int port){
         const char *status_text = "OK";
 
         if (strcmp(path, "/") == 0) {
-            body = "hello tinyhttp\n";
+        body = "hello tinyhttp\n";
         } else if (strcmp(path, "/health") == 0) {
-            body = "ok\n";
+        body = "ok\n";
         } else {
-            status = 404;
-            status_text = "Not Found";
-            body = "not found\n";
+        status = 404;
+        status_text = "Not Found";
+        body = "not found\n";
         }
 
         int resp_len = snprintf(resp, sizeof(resp),
