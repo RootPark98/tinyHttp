@@ -82,6 +82,10 @@ int run_server(const char *host, int port) {
     // 요청 읽기 (Phase 2에서는 최소 1회만)
     char buf[4096];
     ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
+    if(n == 0){
+      close(client_fd);
+      continue;
+    }
     if (n < 0) {
       perror("read");
       close(client_fd);
